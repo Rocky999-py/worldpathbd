@@ -7,7 +7,7 @@ const FundPanel: React.FC = () => {
   const [amount, setAmount] = useState<string>('');
   const [method, setMethod] = useState<'bKash' | 'Nagad' | 'Rocket' | 'Bank'>('bKash');
   const [isProcessing, setIsProcessing] = useState(false);
-  const { walletId, addFund } = useWallet();
+  const { walletId, requestFund, user } = useWallet();
   const { lang } = useLanguage();
 
   const handlePayment = async () => {
@@ -18,13 +18,11 @@ const FundPanel: React.FC = () => {
     }
     setIsProcessing(true);
     try {
-      const redirect = await addFund(val);
-      // Simulate SSLCommerz gateway redirect
+      requestFund(val, method);
       setTimeout(() => {
         setIsProcessing(false);
-        alert(`Redirecting to SSLCommerz Gateway for ${method} payment...`);
-        window.location.hash = '/';
-      }, 1500);
+        alert(`WhatsApp request sent to WorldPath Authority. Your balance will update automatically once confirmed.`);
+      }, 1000);
     } catch (e) {
       setIsProcessing(false);
     }
@@ -41,7 +39,7 @@ const FundPanel: React.FC = () => {
     <div className="container mx-auto px-6 py-20 max-w-4xl">
       <div className="text-center mb-16">
         <h1 className="text-5xl font-black text-white tracking-tighter uppercase mb-4">NEURAL <span className="gold-gradient">FUNDING.</span></h1>
-        <p className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">Secure SSLCommerz Bridge Protocol</p>
+        <p className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">Secure Manual Verification Bridge</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -69,7 +67,7 @@ const FundPanel: React.FC = () => {
           </div>
 
           <div>
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 block">Payment Method</label>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 block">Preferred Method</label>
             <div className="grid grid-cols-2 gap-3">
               {methods.map(m => (
                 <button 
@@ -87,8 +85,12 @@ const FundPanel: React.FC = () => {
 
         <div className="flex flex-col gap-8">
           <div className="glass-panel p-10 rounded-[48px] border border-white/5 bg-blue-600/5 flex-grow">
-            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-8">Order Summary</h3>
+            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-8">Verification Summary</h3>
             <div className="space-y-4 border-b border-white/5 pb-8 mb-8">
+              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <span>Identity</span>
+                <span className="text-white">{user?.name}</span>
+              </div>
               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
                 <span>Wallet Node</span>
                 <span className="text-white">{walletId}</span>
@@ -106,24 +108,24 @@ const FundPanel: React.FC = () => {
             <button 
               onClick={handlePayment}
               disabled={isProcessing || !amount}
-              className="w-full py-6 rounded-[24px] bg-amber-500 text-black font-black text-lg hover:bg-white transition-all shadow-2xl active:scale-95 disabled:opacity-30 flex items-center justify-center gap-3"
+              className="w-full py-6 rounded-[24px] bg-amber-500 text-black font-black text-lg hover:bg-white transition-all shadow-2xl active:scale-95 disabled:opacity-30 flex items-center justify-center gap-3 group"
             >
               {isProcessing ? (
                 <i className="fa-solid fa-circle-notch animate-spin"></i>
               ) : (
-                <i className="fa-solid fa-shield-halved"></i>
+                <i className="fa-brands fa-whatsapp text-2xl group-hover:scale-110 transition-transform"></i>
               )}
-              INITIALIZE GATEWAY
+              {isProcessing ? 'SENDING REQUEST...' : 'REQUEST FUNDING VIA WA'}
             </button>
           </div>
 
           <div className="bg-white/5 p-8 rounded-[40px] border border-white/5">
              <div className="flex items-center gap-4 mb-4">
-               <img src="https://securepay.sslcommerz.com/gw/images/sslcommerz-logo.png" className="h-4 grayscale opacity-50" />
-               <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">Bank Level Security</span>
+               <i className="fa-solid fa-shield-check text-emerald-500"></i>
+               <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">Authority Verification Active</span>
              </div>
              <p className="text-[10px] text-slate-500 font-bold leading-relaxed">
-               By clicking Initialize, you will be redirected to the secure SSLCommerz payment gateway. WorldPath BD does not store your financial details.
+               Requests are processed manually by WorldPath BD management via WhatsApp to ensure 100% security for both parties.
              </p>
           </div>
         </div>

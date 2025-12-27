@@ -36,8 +36,13 @@ mongoose.connect(MONGODB_URI)
 // Models
 const WalletSchema = new mongoose.Schema({
   walletId: { type: String, required: true, unique: true },
+  name: String,
+  phone: String,
   balance: { type: Number, default: 0 },
-  lastUpdated: { type: Date, default: Date.now }
+  authorized: { type: Boolean, default: false },
+  suspended: { type: Boolean, default: false },
+  lastUpdated: { type: Date, default: Date.now },
+  registeredAt: { type: Date, default: Date.now }
 });
 
 const InquirySchema = new mongoose.Schema({
@@ -56,35 +61,89 @@ const Inquiry = mongoose.models.Inquiry || mongoose.model('Inquiry', InquirySche
 
 // --- API ROUTES ---
 
-// SSLCommerz Initialization Simulation
-app.post('/api/payment/init', apiLimiter, async (req, res) => {
-  const { walletId, amount, method } = req.body;
-  
-  // In real SSLCommerz:
-  // 1. Create unique transaction ID
-  // 2. Build SSLCommerz request object
-  // 3. Call SSLCommerz API
-  // 4. Return GatewayPageURL
-  
-  res.json({
-    status: 'SUCCESS',
-    GatewayPageURL: `https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?id=${Math.random().toString(36).substr(2, 5)}`
-  });
+// Sync User Profile (called when user requests access)
+app.post('/api/wallet/sync', apiLimiter, async (req, res) => {
+  const { walletId, name, phone } = req.body;
+  try {
+    const wallet = await Wallet.findOneAndUpdate(
+      { walletId },
+      { name, phone, lastUpdated: new Date() },
+      { upsert: true, new: true }
+    );
+    res.json(wallet);
+  } catch (err) {
+    res.status(500).json({ error: 'Sync failed' });
+  }
 });
 
-// Payment Hooks (Success/Fail/Cancel)
-app.post('/api/payment/success', async (req, res) => {
-  const { tran_id, walletId, amount } = req.body;
-  // Update wallet balance in DB
-  await Wallet.findOneAndUpdate(
-    { walletId },
-    { $inc: { balance: amount }, lastUpdated: new Date() },
-    { upsert: true }
-  );
-  res.redirect(`${process.env.FRONTEND_URL}/#/add-fund?status=success`);
+// Check Status (Polling endpoint for clients)
+app.get('/api/wallet/status/:id', async (req, res) => {
+  try {
+    const wallet = await Wallet.findOne({ walletId: req.params.id });
+    if (!wallet) return res.status(404).json({ error: 'Node not found' });
+    res.json({
+      authorized: wallet.authorized,
+      suspended: wallet.suspended,
+      balance: wallet.balance
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Status check failed' });
+  }
 });
 
-// Public Feed
+// --- ADMIN CONTROL ROUTES (The "WhatsApp Agent" Interface) ---
+
+// Get all users for the Admin Dashboard
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const users = await Wallet.find().sort({ registeredAt: -1 });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Fetch failed' });
+  }
+});
+
+// Toggle Authorization
+app.post('/api/admin/authorize', async (req, res) => {
+  const { walletId, status } = req.body;
+  try {
+    const wallet = await Wallet.findOneAndUpdate(
+      { walletId },
+      { authorized: status, lastUpdated: new Date() },
+      { new: true }
+    );
+    res.json(wallet);
+  } catch (err) {
+    res.status(500).json({ error: 'Auth toggle failed' });
+  }
+});
+
+// Update Balance (Add/Subtract Funds)
+app.post('/api/admin/update-balance', async (req, res) => {
+  const { walletId, amount } = req.body;
+  try {
+    const wallet = await Wallet.findOneAndUpdate(
+      { walletId },
+      { $inc: { balance: amount }, lastUpdated: new Date() },
+      { new: true }
+    );
+    res.json(wallet);
+  } catch (err) {
+    res.status(500).json({ error: 'Balance update failed' });
+  }
+});
+
+// Delete User
+app.delete('/api/admin/users/:walletId', async (req, res) => {
+  try {
+    await Wallet.deleteOne({ walletId: req.params.walletId });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Deletion failed' });
+  }
+});
+
+// Public Feed (for the site's scrolling activity)
 app.get('/api/public/recent-inquiries', async (req, res) => {
   const inquiries = await Inquiry.find().sort({ timestamp: -1 }).limit(10);
   res.json(inquiries);
@@ -97,7 +156,7 @@ app.post('/api/inquiries', async (req, res) => {
     await inquiry.save();
     res.status(201).json(inquiry);
   } catch (err) {
-    res.status(400).json({ error: 'Fault' });
+    res.status(400).json({ error: 'Inquiry failed' });
   }
 });
 
@@ -109,4 +168,4 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Gateway Node on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Authority Core Node active on port ${PORT}`));

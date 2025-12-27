@@ -9,19 +9,27 @@ import ChatAssistant from './pages/ChatAssistant';
 import AppointmentSoftware from './pages/AppointmentSoftware';
 import FundPanel from './pages/FundPanel';
 import AdminDashboard from './pages/AdminDashboard';
+import Auth from './pages/Auth';
+import { useWallet } from './context/WalletContext';
 
 const App: React.FC = () => {
   return (
     <HashRouter>
       <Layout>
         <Routes>
+          {/* Main Public Routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/author" element={<AdminDashboard />} />
-          <Route path="/add-fund" element={<FundPanel />} />
           <Route path="/guide/:countryId/:visaType" element={<VisaGuide />} />
           <Route path="/documents" element={<DocumentAssistant />} />
           <Route path="/chat" element={<ChatAssistant />} />
+          
+          {/* Feature Routes */}
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/add-fund" element={<FundPanel />} />
           <Route path="/booking-software" element={<AppointmentSoftware />} />
+          
+          {/* Management Route */}
+          <Route path="/author" element={<AdminDashboard />} />
         </Routes>
       </Layout>
     </HashRouter>

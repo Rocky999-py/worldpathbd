@@ -7,13 +7,16 @@ export type Region = 'All' | 'Europe' | 'Americas' | 'Asia' | 'Oceania' | 'Middl
 export interface User {
   id: string;
   name: string;
-  email: string;
-  pin: string;
-  type: 'Individual' | 'Agency';
-  purpose: string;
-  rlNumber?: string;
-  website?: string;
+  phone: string;
+  authorized: boolean;
   registeredAt: number;
+}
+
+export interface Wallet {
+  walletId: string;
+  balance: number;
+  userName: string;
+  userPhone: string;
 }
 
 export interface Country {

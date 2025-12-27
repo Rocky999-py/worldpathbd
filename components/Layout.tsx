@@ -8,8 +8,9 @@ import MessengerChat from './MessengerChat';
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { lang, setLang, t } = useLanguage();
-  const { walletId, balance } = useWallet();
+  const { walletId, balance, user, logout } = useWallet();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   
   const navItems = [
     { path: '/', label: t('explore'), icon: 'fa-compass' },
@@ -34,57 +35,85 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
           </Link>
           
-          <nav className="hidden lg:flex gap-2 items-center">
-            {navItems.map(item => (
-              <Link 
-                key={item.path} 
-                to={item.path} 
-                className={`flex items-center gap-3 px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 border ${
-                  location.pathname === item.path 
-                    ? 'bg-amber-500/10 text-white border-amber-500/40' 
-                    : 'text-slate-500 border-transparent hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <i className={`fa-solid ${item.icon} text-xs`}></i>
-                <span className={lang === 'bn' ? 'bengali' : ''}>{item.label}</span>
-              </Link>
-            ))}
-          </nav>
+          {user && (
+            <nav className="hidden lg:flex gap-2 items-center">
+              {navItems.map(item => (
+                <Link 
+                  key={item.path} 
+                  to={item.path} 
+                  className={`flex items-center gap-3 px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 border ${
+                    location.pathname === item.path 
+                      ? 'bg-amber-500/10 text-white border-amber-500/40' 
+                      : 'text-slate-500 border-transparent hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <i className={`fa-solid ${item.icon} text-xs`}></i>
+                  <span className={lang === 'bn' ? 'bengali' : ''}>{item.label}</span>
+                </Link>
+              ))}
+            </nav>
+          )}
 
           <div className="flex items-center gap-3 md:gap-6">
-            <Link 
-              to="/add-fund"
-              className="flex items-center gap-3 md:gap-4 bg-white/[0.03] border border-white/10 p-1.5 md:p-2 pl-3 md:pl-4 rounded-xl md:rounded-2xl hover:border-amber-500/50 transition-all group"
-            >
-              <div className="text-right">
-                <div className="text-[7px] md:text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Wallet: {walletId?.slice(-6)}</div>
-                <div className="text-xs font-black text-white uppercase tracking-tighter">
-                  {balance.toLocaleString()} <span className="text-amber-500 text-[10px]">BDT</span>
-                </div>
-              </div>
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-amber-500 rounded-lg md:rounded-xl flex items-center justify-center text-black shadow-lg group-hover:bg-white transition-all">
-                <i className="fa-solid fa-plus text-[10px]"></i>
-              </div>
-            </Link>
+            {user ? (
+              <div className="relative">
+                <button 
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center gap-3 md:gap-4 bg-white/[0.03] border border-white/10 p-1.5 md:p-2 pl-3 md:pl-4 rounded-xl md:rounded-2xl hover:border-amber-500/50 transition-all group"
+                >
+                  <div className="text-right">
+                    <div className="text-[7px] md:text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">{user.name}</div>
+                    <div className="text-xs font-black text-white uppercase tracking-tighter">
+                      {balance.toLocaleString()} <span className="text-amber-500 text-[10px]">BDT</span>
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-amber-500 rounded-lg md:rounded-xl flex items-center justify-center text-black shadow-lg group-hover:bg-white transition-all">
+                    <i className="fa-solid fa-user-ninja text-[12px]"></i>
+                  </div>
+                </button>
 
-            {/* Language Switcher Mobile Compact */}
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-4 w-64 glass-panel rounded-3xl border border-white/10 p-4 shadow-2xl animate-in fade-in zoom-in duration-200">
+                    <div className="p-4 border-b border-white/5 mb-2">
+                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Wallet Node</p>
+                       <p className="text-sm font-bold text-white">{walletId}</p>
+                    </div>
+                    <div className="p-4 border-b border-white/5 mb-4">
+                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Authorized Phone</p>
+                       <p className="text-sm font-bold text-white">{user.phone}</p>
+                    </div>
+                    <Link to="/add-fund" onClick={() => setShowProfileMenu(false)} className="flex items-center gap-3 w-full p-4 rounded-xl hover:bg-white/5 text-[10px] font-black uppercase text-amber-500 transition-all">
+                      <i className="fa-solid fa-plus-circle"></i> Add Neural Funds
+                    </Link>
+                    <button onClick={() => {logout(); setShowProfileMenu(false);}} className="flex items-center gap-3 w-full p-4 rounded-xl hover:bg-rose-500/10 text-[10px] font-black uppercase text-rose-500 transition-all">
+                      <i className="fa-solid fa-power-off"></i> Terminate Link
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link to="/auth" className="gold-button px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                Authorize Access
+              </Link>
+            )}
+
             <div className="hidden sm:flex bg-white/5 p-1 rounded-xl border border-white/10 h-10">
               <button onClick={() => setLang('en')} className={`px-2 md:px-3 rounded-lg text-[9px] font-black ${lang === 'en' ? 'bg-white/10 text-white' : 'text-slate-600'}`}>EN</button>
               <button onClick={() => setLang('bn')} className={`px-2 md:px-3 rounded-lg text-[9px] font-black bengali ${lang === 'bn' ? 'bg-white/10 text-white' : 'text-slate-600'}`}>বাং</button>
             </div>
 
-            {/* Mobile Menu Toggle */}
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white text-lg"
-            >
-              <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars-staggered'}`}></i>
-            </button>
+            {user && (
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white text-lg"
+              >
+                <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars-staggered'}`}></i>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Mobile Navigation Dropdown */}
-        {mobileMenuOpen && (
+        {mobileMenuOpen && user && (
           <div className="lg:hidden bg-slate-950 border-t border-white/5 animate-in slide-in-from-top duration-300">
             <div className="p-6 space-y-4">
               {navItems.map(item => (

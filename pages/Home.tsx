@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { COUNTRIES, VISA_TYPES } from '../constants';
 import { Country, VisaType, Region } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { useWallet } from '../context/WalletContext';
 
 const Home: React.FC = () => {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
@@ -11,6 +12,7 @@ const Home: React.FC = () => {
   const [activeRegion, setActiveRegion] = useState<Region>('All');
   const navigate = useNavigate();
   const { lang, t } = useLanguage();
+  const { user } = useWallet();
 
   const filteredCountries = useMemo(() => {
     if (activeRegion === 'All') return COUNTRIES;
@@ -30,6 +32,19 @@ const Home: React.FC = () => {
       {/* Hero Content */}
       <section className="container mx-auto px-6 pt-24 pb-16 md:pt-40 md:pb-32 relative z-10">
         <div className="max-w-6xl mx-auto text-center">
+          
+          {user && !user.authorized && (
+            <div className="max-w-xl mx-auto bg-amber-500/10 border border-amber-500/40 p-6 rounded-[32px] mb-12 flex items-center gap-6 animate-pulse">
+               <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-black flex-shrink-0">
+                  <i className="fa-solid fa-shield-clock"></i>
+               </div>
+               <div className="text-left">
+                  <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">Access: Pending Verification</p>
+                  <p className="text-xs text-white font-medium leading-relaxed">Your profile is registered. Premium features like 'Slot Automator' will activate once verified via WhatsApp.</p>
+               </div>
+            </div>
+          )}
+
           <div className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-400 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-8 border border-blue-500/20 animate-float">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
