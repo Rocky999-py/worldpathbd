@@ -1,0 +1,7 @@
+{
+  "name": "WorldPath BD - Global AI Visa Assistant",
+  "description": "A comprehensive AI-powered visa guidance platform for Bangladeshi citizens applying to countries worldwide, including Europe, USA, Canada, and Australia. Includes bilingual chat support, document analysis, and step-by-step processing guides.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
