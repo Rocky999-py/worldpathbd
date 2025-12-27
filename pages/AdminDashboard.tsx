@@ -27,11 +27,12 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState('');
   const [users, setUsers] = useState<WalletUser[]>([]);
   const [inquiries, setInquiries] = useState<SoftwareInquiry[]>([]);
-  const [activeTab, setActiveTab] = useState<'users' | 'inquiries' | 'funds'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'inquiries' | 'create' | 'edit'>('users');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fund Injection State
-  const [injection, setInjection] = useState({ walletId: '', amount: '' });
+  // User Forms State
+  const [userForm, setUserForm] = useState({ walletId: '', name: '', phone: '', balance: 0, authorized: true });
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('worldpath_token');
@@ -55,7 +56,7 @@ const AdminDashboard: React.FC = () => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      if (activeTab === 'users' || activeTab === 'funds') {
+      if (activeTab === 'users' || activeTab === 'edit' || activeTab === 'create') {
         const data = await apiRequest('/admin/users');
         setUsers(data);
       } else {
@@ -85,6 +86,55 @@ const AdminDashboard: React.FC = () => {
     setIsLoading(false);
   };
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await apiRequest('/admin/users', {
+        method: 'POST',
+        body: JSON.stringify(userForm)
+      });
+      alert("Node successfully created.");
+      setUserForm({ walletId: '', name: '', phone: '', balance: 0, authorized: true });
+      setActiveTab('users');
+    } catch (err) {
+      alert("Creation failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingId) return;
+    setIsLoading(true);
+    try {
+      await apiRequest(`/admin/users/${editingId}`, {
+        method: 'PUT',
+        body: JSON.stringify(userForm)
+      });
+      alert("Node successfully updated.");
+      setEditingId(null);
+      setActiveTab('users');
+    } catch (err) {
+      alert("Update failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startEditing = (user: WalletUser) => {
+    setEditingId(user.walletId);
+    setUserForm({
+      walletId: user.walletId,
+      name: user.name,
+      phone: user.phone,
+      balance: user.balance,
+      authorized: user.authorized
+    });
+    setActiveTab('edit');
+  };
+
   const handleToggleAuth = async (walletId: string, currentStatus: boolean) => {
     try {
       await apiRequest('/admin/authorize', {
@@ -94,27 +144,6 @@ const AdminDashboard: React.FC = () => {
       fetchData();
     } catch (err) {
       alert("Failed to update status");
-    }
-  };
-
-  const handleFundInjection = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const amt = parseFloat(injection.amount);
-    if (isNaN(amt)) return;
-    
-    setIsLoading(true);
-    try {
-      await apiRequest('/admin/update-balance', {
-        method: 'POST',
-        body: JSON.stringify({ walletId: injection.walletId, amount: amt })
-      });
-      alert("Funds successfully injected into Node " + injection.walletId);
-      setInjection({ walletId: '', amount: '' });
-      fetchData();
-    } catch (err) {
-      alert("Injection failed. Check Wallet ID.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -149,39 +178,16 @@ const AdminDashboard: React.FC = () => {
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">Agent ID</label>
-              <input 
-                required 
-                type="text" 
-                value={loginData.username}
-                onChange={e => setLoginData({...loginData, username: e.target.value})}
-                className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:border-amber-500 transition-all text-sm font-bold" 
-                placeholder="ID"
-              />
+              <input required type="text" value={loginData.username} onChange={e => setLoginData({...loginData, username: e.target.value})} className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:border-amber-500 transition-all text-sm font-bold" placeholder="ID" />
             </div>
             <div className="space-y-2">
               <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">Neural Key</label>
-              <input 
-                required 
-                type="password" 
-                value={loginData.password}
-                onChange={e => setLoginData({...loginData, password: e.target.value})}
-                className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:border-amber-500 transition-all text-sm font-bold" 
-                placeholder="••••••••"
-              />
+              <input required type="password" value={loginData.password} onChange={e => setLoginData({...loginData, password: e.target.value})} className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white outline-none focus:border-amber-500 transition-all text-sm font-bold" placeholder="••••••••" />
             </div>
             {error && <p className="text-rose-500 text-[10px] font-bold text-center uppercase tracking-widest">{error}</p>}
-            <button 
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-5 rounded-2xl bg-amber-500 text-slate-950 font-black uppercase tracking-[0.4em] text-xs hover:bg-white transition-all shadow-xl disabled:opacity-50"
-            >
+            <button type="submit" disabled={isLoading} className="w-full py-5 rounded-2xl bg-amber-500 text-slate-950 font-black uppercase tracking-[0.4em] text-xs hover:bg-white transition-all shadow-xl disabled:opacity-50">
               {isLoading ? 'Verifying...' : 'Access Core'}
             </button>
-            <div className="text-center mt-4">
-              <Link to="/" className="text-slate-500 hover:text-white transition-colors text-[9px] font-black uppercase tracking-widest">
-                <i className="fa-solid fa-arrow-left mr-2"></i> Exit
-              </Link>
-            </div>
           </form>
         </div>
       </div>
@@ -190,64 +196,52 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12 md:py-20 animate-fade-in max-w-7xl">
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-8 mb-12 md:mb-16">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-8 mb-12">
         <div>
           <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase">AUTHOR <span className="gold-gradient">PANEL.</span></h1>
           <p className="text-amber-500/60 text-[10px] font-black uppercase tracking-[0.4em]">WhatsApp Agent: +8801300172795</p>
         </div>
         <div className="flex gap-4">
-          <button 
-            onClick={fetchData}
-            className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-[10px] font-black uppercase hover:text-white transition-all"
-          >
-            <i className={`fa-solid fa-arrows-rotate mr-2 ${isLoading ? 'animate-spin' : ''}`}></i> Sync
+          <button onClick={() => { setUserForm({ walletId: '', name: '', phone: '', balance: 0, authorized: true }); setEditingId(null); setActiveTab('create'); }} className="px-8 py-3 rounded-xl bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all shadow-lg">
+            Add New User
           </button>
-          <button 
-            onClick={handleLogout}
-            className="px-8 py-3 rounded-xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-rose-500 transition-all shadow-lg"
-          >
+          <button onClick={handleLogout} className="px-8 py-3 rounded-xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-rose-500 transition-all shadow-lg">
             Log Out
           </button>
         </div>
       </div>
 
-      {/* Admin Tabs */}
+      {/* Tabs */}
       <div className="flex flex-wrap bg-white/5 p-1 rounded-2xl border border-white/10 mb-8 max-w-2xl">
         {[
           { id: 'users', label: 'Nodes', icon: 'fa-users-gear' },
-          { id: 'funds', label: 'Fund Control', icon: 'fa-money-bill-transfer' },
           { id: 'inquiries', label: 'Command Logs', icon: 'fa-terminal' }
         ].map(tab => (
-          <button 
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex-1 py-4 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-500 hover:text-white'}`}
-          >
+          <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`flex-1 py-4 px-6 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-500 hover:text-white'}`}>
             <i className={`fa-solid ${tab.icon}`}></i>
-            <span className="hidden sm:inline">{tab.label}</span>
+            <span>{tab.label}</span>
           </button>
         ))}
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        
-        {/* User Management Tab */}
+        {/* List Tab */}
         {activeTab === 'users' && (
-          <div className="glass-panel rounded-[40px] border border-white/5 shadow-2xl overflow-hidden relative">
+          <div className="glass-panel rounded-[40px] border border-white/5 shadow-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-white/5 border-b border-white/10">
-                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Profile</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Profile Identity</th>
                     <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Wallet Node</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Balance</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Status</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Actions</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Balance (BDT)</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Authorization</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {users.length > 0 ? users.map(u => (
-                    <tr key={u.walletId} className="hover:bg-white/[0.02] transition-colors group">
+                  {users.map(u => (
+                    <tr key={u.walletId} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-8 py-6">
                         <div className="font-bold text-white text-sm">{u.name}</div>
                         <div className="text-[10px] text-slate-500">{u.phone}</div>
@@ -255,121 +249,87 @@ const AdminDashboard: React.FC = () => {
                       <td className="px-8 py-6">
                          <span className="mono text-[11px] bg-white/5 px-3 py-1.5 rounded-lg text-blue-400 border border-white/5">{u.walletId}</span>
                       </td>
+                      <td className="px-8 py-6 font-black text-amber-500 text-sm">৳{u.balance.toLocaleString()}</td>
                       <td className="px-8 py-6">
-                        <span className="font-black text-amber-500 text-sm">৳{u.balance.toLocaleString()}</span>
-                      </td>
-                      <td className="px-8 py-6">
-                        <button 
-                          onClick={() => handleToggleAuth(u.walletId, u.authorized)}
-                          className={`text-[9px] font-black px-4 py-2 rounded-xl uppercase border transition-all ${u.authorized ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10' : 'border-rose-500 text-rose-500 bg-rose-500/10 animate-pulse'}`}
-                        >
-                          {u.authorized ? 'AUTHORIZED' : 'PENDING WA'}
+                        <button onClick={() => handleToggleAuth(u.walletId, u.authorized)} className={`text-[9px] font-black px-4 py-2 rounded-xl uppercase border ${u.authorized ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10' : 'border-rose-500 text-rose-500 bg-rose-500/10'}`}>
+                          {u.authorized ? 'AUTHORIZED' : 'PENDING'}
                         </button>
                       </td>
-                      <td className="px-8 py-6">
-                         <button 
-                           onClick={() => handleDeleteUser(u.walletId)}
-                           className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 text-slate-600 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center"
-                         >
+                      <td className="px-8 py-6 text-right space-x-2">
+                         <button onClick={() => startEditing(u)} className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 text-blue-400 hover:bg-blue-600 hover:text-white transition-all inline-flex items-center justify-center">
+                           <i className="fa-solid fa-pen-to-square"></i>
+                         </button>
+                         <button onClick={() => handleDeleteUser(u.walletId)} className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 text-rose-600 hover:bg-rose-500 hover:text-white transition-all inline-flex items-center justify-center">
                            <i className="fa-solid fa-trash-can"></i>
                          </button>
                       </td>
                     </tr>
-                  )) : (
-                    <tr><td colSpan={5} className="px-8 py-20 text-center text-slate-600 uppercase tracking-widest font-black text-xs">No Nodes Connected</td></tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* Fund Control Tab */}
-        {activeTab === 'funds' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-             <div className="lg:col-span-4 glass-panel p-10 rounded-[48px] border border-white/5">
-                <h3 className="text-xl font-black text-white uppercase tracking-tight mb-8">Inject Funds</h3>
-                <form onSubmit={handleFundInjection} className="space-y-6">
-                   <div className="space-y-2">
-                     <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">Target Wallet ID</label>
-                     <input 
-                       required 
-                       type="text" 
-                       value={injection.walletId}
-                       onChange={e => setInjection({...injection, walletId: e.target.value.toUpperCase()})}
-                       className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-sm outline-none focus:border-amber-500"
-                       placeholder="WP-XXXXXX"
-                     />
-                   </div>
-                   <div className="space-y-2">
-                     <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">Amount (BDT)</label>
-                     <input 
-                       required 
-                       type="number" 
-                       value={injection.amount}
-                       onChange={e => setInjection({...injection, amount: e.target.value})}
-                       className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-sm outline-none focus:border-amber-500"
-                       placeholder="e.g. 1000"
-                     />
-                   </div>
-                   <button 
-                     type="submit"
-                     disabled={isLoading}
-                     className="w-full py-5 rounded-2xl bg-amber-500 text-slate-950 font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:bg-white transition-all"
-                   >
-                     {isLoading ? 'Injecting...' : 'Confirm Injection'}
-                   </button>
-                </form>
-             </div>
-
-             <div className="lg:col-span-8 glass-panel rounded-[48px] border border-white/5 overflow-hidden">
-                <div className="p-10 border-b border-white/5 bg-white/5">
-                   <h3 className="text-xl font-black text-white uppercase tracking-tight">Active Wallets</h3>
+        {/* Create / Edit Form Tab */}
+        {(activeTab === 'create' || activeTab === 'edit') && (
+          <div className="glass-panel max-w-2xl mx-auto w-full p-10 md:p-14 rounded-[48px] border border-white/5">
+            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-8">
+              {activeTab === 'create' ? 'Manually Add Node' : 'Modify Existing Node'}
+            </h3>
+            <form onSubmit={activeTab === 'create' ? handleCreateUser : handleUpdateUser} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">Full Identity</label>
+                  <input required type="text" value={userForm.name} onChange={e => setUserForm({...userForm, name: e.target.value})} className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-sm outline-none focus:border-amber-500" placeholder="Name" />
                 </div>
-                <div className="max-h-[500px] overflow-y-auto p-6 custom-scrollbar">
-                   {users.filter(u => u.authorized).map(u => (
-                     <div key={u.walletId} className="flex items-center justify-between p-6 rounded-3xl hover:bg-white/5 transition-all mb-4 border border-white/5">
-                        <div className="flex items-center gap-4">
-                           <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 border border-blue-500/20">
-                              <i className="fa-solid fa-wallet"></i>
-                           </div>
-                           <div>
-                              <div className="font-bold text-white text-sm">{u.name}</div>
-                              <div className="text-[10px] text-slate-500 mono">{u.walletId}</div>
-                           </div>
-                        </div>
-                        <div className="text-right">
-                           <div className="text-xl font-black text-amber-500 tracking-tighter">৳{u.balance.toLocaleString()}</div>
-                           <button 
-                             onClick={() => setInjection({ ...injection, walletId: u.walletId })}
-                             className="text-[9px] font-black text-blue-400 uppercase tracking-widest hover:text-white"
-                           >
-                             Select for Injection
-                           </button>
-                        </div>
-                     </div>
-                   ))}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">WA Phone</label>
+                  <input required type="tel" value={userForm.phone} onChange={e => setUserForm({...userForm, phone: e.target.value})} className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-sm outline-none focus:border-amber-500" placeholder="+8801..." />
                 </div>
-             </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">Initial Balance (BDT)</label>
+                  <input required type="number" value={userForm.balance} onChange={e => setUserForm({...userForm, balance: parseInt(e.target.value)})} className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-sm outline-none focus:border-amber-500" placeholder="0" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-4">Node ID (Optional)</label>
+                  <input type="text" value={userForm.walletId} disabled={activeTab === 'edit'} onChange={e => setUserForm({...userForm, walletId: e.target.value.toUpperCase()})} className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold text-sm outline-none focus:border-amber-500 disabled:opacity-50" placeholder="WP-XXXXXX" />
+                </div>
+              </div>
+              <div className="flex items-center gap-4 py-4">
+                <button type="button" onClick={() => setUserForm({...userForm, authorized: !userForm.authorized})} className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${userForm.authorized ? 'bg-emerald-500 text-black border-emerald-500' : 'bg-transparent text-slate-500 border-white/10'}`}>
+                  {userForm.authorized ? 'Authorized' : 'Unauthorized'}
+                </button>
+              </div>
+              <div className="flex gap-4 pt-6">
+                <button type="submit" disabled={isLoading} className="flex-grow py-5 rounded-2xl bg-amber-500 text-slate-950 font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:bg-white transition-all">
+                  {isLoading ? 'Processing...' : activeTab === 'create' ? 'Create Node' : 'Save Changes'}
+                </button>
+                <button type="button" onClick={() => setActiveTab('users')} className="px-10 py-5 rounded-2xl bg-white/5 text-slate-500 font-black uppercase text-xs tracking-[0.2em] hover:text-white transition-all">
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         )}
 
-        {/* Command Logs Tab */}
+        {/* Logs Tab */}
         {activeTab === 'inquiries' && (
-          <div className="glass-panel rounded-[40px] border border-white/5 shadow-2xl overflow-hidden relative">
+          <div className="glass-panel rounded-[40px] border border-white/5 shadow-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-white/5 border-b border-white/10">
                     <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Mission</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Node Phone</th>
+                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Phone</th>
                     <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Tier</th>
                     <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Status</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-amber-500 uppercase tracking-widest">Timestamp</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {inquiries.length > 0 ? inquiries.map(i => (
+                  {inquiries.map(i => (
                     <tr key={i._id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-8 py-6">
                         <div className="text-sm font-bold text-white">{i.portal}</div>
@@ -382,11 +342,8 @@ const AdminDashboard: React.FC = () => {
                           {i.status}
                         </span>
                       </td>
-                      <td className="px-8 py-6 text-[10px] font-black text-slate-600 mono">{new Date(i.timestamp).toLocaleString()}</td>
                     </tr>
-                  )) : (
-                    <tr><td colSpan={5} className="px-8 py-20 text-center text-slate-600 uppercase tracking-widest font-black text-xs">No Logs Recorded</td></tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>

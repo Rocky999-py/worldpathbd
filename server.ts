@@ -1,5 +1,5 @@
 
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -61,7 +61,7 @@ const Inquiry = mongoose.models.Inquiry || mongoose.model('Inquiry', InquirySche
 
 // --- API ROUTES ---
 
-// Sync User Profile (called when user requests access)
+// Sync User Profile
 app.post('/api/wallet/sync', apiLimiter, async (req, res) => {
   const { walletId, name, phone } = req.body;
   try {
@@ -76,7 +76,7 @@ app.post('/api/wallet/sync', apiLimiter, async (req, res) => {
   }
 });
 
-// Check Status (Polling endpoint for clients)
+// Check Status
 app.get('/api/wallet/status/:id', async (req, res) => {
   try {
     const wallet = await Wallet.findOne({ walletId: req.params.id });
@@ -91,9 +91,43 @@ app.get('/api/wallet/status/:id', async (req, res) => {
   }
 });
 
-// --- ADMIN CONTROL ROUTES (The "WhatsApp Agent" Interface) ---
+// --- ADMIN CONTROL ROUTES ---
 
-// Get all users for the Admin Dashboard
+// Create User Manually
+app.post('/api/admin/users', async (req, res) => {
+  try {
+    const { name, phone, balance, walletId, authorized } = req.body;
+    const finalId = walletId || 'WP-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    const newUser = new Wallet({
+      walletId: finalId,
+      name,
+      phone,
+      balance: balance || 0,
+      authorized: authorized !== undefined ? authorized : true
+    });
+    await newUser.save();
+    res.status(201).json(newUser);
+  } catch (err) {
+    res.status(500).json({ error: 'Manual creation failed' });
+  }
+});
+
+// Update User Details
+app.put('/api/admin/users/:walletId', async (req, res) => {
+  try {
+    const { name, phone, balance, authorized, suspended } = req.body;
+    const wallet = await Wallet.findOneAndUpdate(
+      { walletId: req.params.walletId },
+      { name, phone, balance, authorized, suspended, lastUpdated: new Date() },
+      { new: true }
+    );
+    res.json(wallet);
+  } catch (err) {
+    res.status(500).json({ error: 'Update failed' });
+  }
+});
+
+// Get all users
 app.get('/api/admin/users', async (req, res) => {
   try {
     const users = await Wallet.find().sort({ registeredAt: -1 });
@@ -118,7 +152,7 @@ app.post('/api/admin/authorize', async (req, res) => {
   }
 });
 
-// Update Balance (Add/Subtract Funds)
+// Update Balance (Injection)
 app.post('/api/admin/update-balance', async (req, res) => {
   const { walletId, amount } = req.body;
   try {
@@ -143,7 +177,7 @@ app.delete('/api/admin/users/:walletId', async (req, res) => {
   }
 });
 
-// Public Feed (for the site's scrolling activity)
+// Public Feed
 app.get('/api/public/recent-inquiries', async (req, res) => {
   const inquiries = await Inquiry.find().sort({ timestamp: -1 }).limit(10);
   res.json(inquiries);

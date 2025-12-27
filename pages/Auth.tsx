@@ -1,32 +1,63 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
 
 const Auth: React.FC = () => {
   const [formData, setFormData] = useState({ name: '', phone: '' });
-  const [isRequesting, setIsRequesting] = useState(false);
+  const [authState, setAuthState] = useState<'idle' | 'requesting' | 'success'>('idle');
   const { requestAccess, user } = useWallet();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsRequesting(true);
+    setAuthState('requesting');
+    
+    // Trigger the WhatsApp bridge and profile creation
     requestAccess(formData.name, formData.phone);
-    // After triggering WhatsApp, we allow them into the site with a "Profile Created" state
+    
+    // Transition to success state immediately after sending
+    setTimeout(() => {
+      setAuthState('success');
+    }, 800);
+
+    // Auto-redirect to main page after a few seconds
     setTimeout(() => {
       navigate('/');
-    }, 1000);
+    }, 5000);
   };
 
-  if (user) {
-    navigate('/');
-    return null;
+  if (authState === 'success') {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-6 py-20 animate-fade-in">
+        <div className="glass-panel w-full max-w-xl p-16 rounded-[64px] text-center border border-emerald-500/20 shadow-[0_0_50px_rgba(16,185,129,0.1)]">
+          <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center text-black text-4xl mx-auto mb-10 shadow-2xl shadow-emerald-500/20 animate-bounce">
+            <i className="fa-solid fa-check"></i>
+          </div>
+          <h2 className="text-4xl font-black text-white mb-6 tracking-tighter uppercase leading-none">DETAILS <br /><span className="text-emerald-500">SENT.</span></h2>
+          <p className="text-slate-400 font-bold leading-relaxed mb-12">
+            Your identity has been transmitted to the WhatsApp agent. <br />
+            <span className="text-amber-500 text-xs uppercase tracking-widest mt-4 block">Redirecting to Neural Core in 4 seconds...</span>
+          </p>
+          <div className="flex justify-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse [animation-delay:0.2s]"></div>
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse [animation-delay:0.4s]"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-6 py-20 relative overflow-hidden">
-      <div className="glass-panel w-full max-w-xl p-10 md:p-16 rounded-[48px] z-10 relative">
+      <div className="glass-panel w-full max-w-xl p-10 md:p-16 rounded-[48px] z-10 relative border border-white/5">
         <div className="text-center mb-12">
           <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/30 rounded-[28px] flex items-center justify-center mx-auto text-amber-500 text-3xl mb-6 shadow-xl shadow-amber-500/5">
             <i className="fa-solid fa-key-skeleton-left-right"></i>
@@ -63,9 +94,12 @@ const Auth: React.FC = () => {
           <div className="pt-4">
             <button 
               type="submit"
-              className="w-full py-7 rounded-[32px] gold-button text-black font-black text-xl shadow-2xl active:scale-95 flex items-center justify-center gap-4 group"
+              disabled={authState !== 'idle'}
+              className={`w-full py-7 rounded-[32px] text-black font-black text-xl shadow-2xl active:scale-95 flex items-center justify-center gap-4 group transition-all ${
+                authState !== 'idle' ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'gold-button'
+              }`}
             >
-              <span>{isRequesting ? 'INITIATING...' : 'ACCESS VIA WHATSAPP'}</span>
+              <span>{authState === 'requesting' ? 'INITIATING...' : 'ACCESS VIA WHATSAPP'}</span>
               <i className="fa-brands fa-whatsapp text-2xl group-hover:scale-110 transition-transform"></i>
             </button>
             <p className="text-center mt-8 text-[9px] text-slate-600 font-bold leading-relaxed uppercase tracking-widest">

@@ -64,7 +64,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <div className="text-right">
                     <div className="text-[7px] md:text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">{user.name}</div>
                     <div className="text-xs font-black text-white uppercase tracking-tighter">
-                      {balance.toLocaleString()} <span className="text-amber-500 text-[10px]">BDT</span>
+                      ৳{balance.toLocaleString()}
                     </div>
                   </div>
                   <div className="w-8 h-8 md:w-10 md:h-10 bg-amber-500 rounded-lg md:rounded-xl flex items-center justify-center text-black shadow-lg group-hover:bg-white transition-all">
@@ -73,21 +73,35 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </button>
 
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-4 w-64 glass-panel rounded-3xl border border-white/10 p-4 shadow-2xl animate-in fade-in zoom-in duration-200">
-                    <div className="p-4 border-b border-white/5 mb-2">
-                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Wallet Node</p>
-                       <p className="text-sm font-bold text-white">{walletId}</p>
+                  <div className="absolute right-0 mt-4 w-72 glass-panel rounded-3xl border border-white/10 p-5 shadow-2xl animate-in fade-in zoom-in duration-200">
+                    <div className="space-y-4 mb-6">
+                      <div className="flex justify-between items-center p-3 rounded-xl bg-white/5">
+                        <span className="text-[9px] font-black text-slate-500 uppercase">Username</span>
+                        <span className="text-xs font-bold text-white">{user.name}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 rounded-xl bg-white/5">
+                        <span className="text-[9px] font-black text-slate-500 uppercase">Wallet ID</span>
+                        <span className="text-xs font-bold text-blue-400 mono">{walletId}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <span className="text-[9px] font-black text-amber-500 uppercase">Fund Balance</span>
+                        <span className="text-xs font-black text-white">৳{balance.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 rounded-xl bg-white/5">
+                        <span className="text-[9px] font-black text-slate-500 uppercase">Status</span>
+                        <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-md ${user.authorized ? 'bg-emerald-500/20 text-emerald-500' : 'bg-rose-500/20 text-rose-500'}`}>
+                          {user.authorized ? 'Verified' : 'Pending'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="p-4 border-b border-white/5 mb-4">
-                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Authorized Phone</p>
-                       <p className="text-sm font-bold text-white">{user.phone}</p>
+                    <div className="space-y-2 pt-2 border-t border-white/5">
+                      <Link to="/add-fund" onClick={() => setShowProfileMenu(false)} className="flex items-center gap-3 w-full p-4 rounded-xl hover:bg-white/5 text-[10px] font-black uppercase text-amber-500 transition-all">
+                        <i className="fa-solid fa-plus-circle"></i> Add Neural Funds
+                      </Link>
+                      <button onClick={() => {logout(); setShowProfileMenu(false);}} className="flex items-center gap-3 w-full p-4 rounded-xl hover:bg-rose-500/10 text-[10px] font-black uppercase text-rose-500 transition-all">
+                        <i className="fa-solid fa-power-off"></i> Terminate Link
+                      </button>
                     </div>
-                    <Link to="/add-fund" onClick={() => setShowProfileMenu(false)} className="flex items-center gap-3 w-full p-4 rounded-xl hover:bg-white/5 text-[10px] font-black uppercase text-amber-500 transition-all">
-                      <i className="fa-solid fa-plus-circle"></i> Add Neural Funds
-                    </Link>
-                    <button onClick={() => {logout(); setShowProfileMenu(false);}} className="flex items-center gap-3 w-full p-4 rounded-xl hover:bg-rose-500/10 text-[10px] font-black uppercase text-rose-500 transition-all">
-                      <i className="fa-solid fa-power-off"></i> Terminate Link
-                    </button>
                   </div>
                 )}
               </div>
@@ -103,10 +117,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
 
             {user && (
-              <button 
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white text-lg"
-              >
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white text-lg">
                 <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars-staggered'}`}></i>
               </button>
             )}
@@ -117,12 +128,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="lg:hidden bg-slate-950 border-t border-white/5 animate-in slide-in-from-top duration-300">
             <div className="p-6 space-y-4">
               {navItems.map(item => (
-                <Link 
-                  key={item.path} 
-                  to={item.path} 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 text-[10px] font-black uppercase text-slate-300 tracking-widest"
-                >
+                <Link key={item.path} to={item.path} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 text-[10px] font-black uppercase text-slate-300 tracking-widest">
                   <i className={`fa-solid ${item.icon} text-amber-500`}></i>
                   {item.label}
                 </Link>
