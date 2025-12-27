@@ -10,7 +10,7 @@ const MessengerChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     { 
       role: 'assistant', 
-      content: "Hello! I am WorldPath AI. How can I help you with your visa today?", 
+      content: "Hello! I am WorldPath AI. How can I help you with your visa today? For immediate human assistance, you can also click the WhatsApp button.", 
       timestamp: Date.now() 
     }
   ]);
@@ -19,6 +19,9 @@ const MessengerChat: React.FC = () => {
   const { lang, t } = useLanguage();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const WHATSAPP_NUMBER = "8801300172795";
+  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}`;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -47,10 +50,26 @@ const MessengerChat: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[1000] flex flex-col items-end">
+    <div className="fixed bottom-8 right-8 z-[1000] flex flex-col items-end gap-4">
+      
+      {/* WhatsApp Floating Button */}
+      <a 
+        href={WHATSAPP_LINK}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex items-center gap-3 pr-2 transition-all duration-500"
+      >
+        <span className="opacity-0 group-hover:opacity-100 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest py-2 px-4 rounded-xl shadow-xl transition-all translate-x-4 group-hover:translate-x-0">
+          WhatsApp Support
+        </span>
+        <div className="w-16 h-16 rounded-[24px] bg-[#25D366] flex items-center justify-center shadow-[0_10px_30px_rgba(37,211,102,0.3)] border border-emerald-400/20 hover:scale-110 transition-transform">
+          <i className="fa-brands fa-whatsapp text-white text-3xl"></i>
+        </div>
+      </a>
+
       {/* Chat Window */}
       {isOpen && (
-        <div className="w-[90vw] sm:w-[400px] h-[600px] mb-6 glass-panel rounded-[40px] overflow-hidden flex flex-col shadow-2xl border border-amber-500/10 animate-in fade-in slide-in-from-bottom-10 duration-500">
+        <div className="w-[90vw] sm:w-[400px] h-[600px] mb-2 glass-panel rounded-[40px] overflow-hidden flex flex-col shadow-2xl border border-amber-500/10 animate-in fade-in slide-in-from-bottom-10 duration-500">
           {/* Header */}
           <div className="p-6 bg-amber-500/10 border-b border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -94,14 +113,16 @@ const MessengerChat: React.FC = () => {
             )}
             
             {/* Quick Actions */}
-            {!loading && messages.length < 10 && (
+            {!loading && (
               <div className="pt-4 flex flex-wrap gap-2">
-                <button 
-                  onClick={() => handleSend("Tell me about appointment booking")}
-                  className="px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[9px] font-black text-amber-500 hover:bg-amber-500 hover:text-black transition-all uppercase tracking-widest"
+                <a 
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[9px] font-black text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all uppercase tracking-widest flex items-center gap-2"
                 >
-                  Appointment Help
-                </button>
+                  <i className="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
                 <button 
                   onClick={() => navigate('/booking-software')}
                   className="px-4 py-2 rounded-xl bg-blue-600/10 border border-blue-600/30 text-[9px] font-black text-blue-400 hover:bg-blue-600 hover:text-white transition-all uppercase tracking-widest"
@@ -135,7 +156,7 @@ const MessengerChat: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Toggle Button */}
+      {/* Floating AI Toggle Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
         className={`w-20 h-20 rounded-[30px] flex items-center justify-center transition-all duration-500 shadow-2xl border ${

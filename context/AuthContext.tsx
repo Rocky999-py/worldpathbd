@@ -1,56 +1,60 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types';
+import { apiRequest } from '../services/apiService';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, pin: string) => boolean;
-  register: (user: Omit<User, 'id' | 'registeredAt'>) => void;
+  login: (email: string, pin: string) => Promise<boolean>;
+  register: (userData: any) => Promise<void>;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('worldpath_session');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+    setLoading(false);
   }, []);
 
-  const login = (email: string, pin: string) => {
-    const users: User[] = JSON.parse(localStorage.getItem('worldpath_users') || '[]');
-    const foundUser = users.find(u => u.email === email && u.pin === pin);
-    if (foundUser) {
-      setUser(foundUser);
-      localStorage.setItem('worldpath_session', JSON.stringify(foundUser));
+  const login = async (email: string, pin: string) => {
+    try {
+      const data = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, pin }),
+      });
+      localStorage.setItem('worldpath_token', data.token);
+      localStorage.setItem('worldpath_session', JSON.stringify(data.user));
+      setUser(data.user);
       return true;
+    } catch (err) {
+      return false;
     }
-    return false;
   };
 
-  const register = (userData: Omit<User, 'id' | 'registeredAt'>) => {
-    const users: User[] = JSON.parse(localStorage.getItem('worldpath_users') || '[]');
-    const newUser: User = {
-      ...userData,
-      id: Math.random().toString(36).substr(2, 9),
-      registeredAt: Date.now(),
-    };
-    users.push(newUser);
-    localStorage.setItem('worldpath_users', JSON.stringify(users));
-    // After registration, we prompt to pay/login
+  const register = async (userData: any) => {
+    await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('worldpath_session');
+    localStorage.removeItem('worldpath_token');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
