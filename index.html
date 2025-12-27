@@ -3,108 +3,151 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WorldPath BD | Future of Global Visa Intelligence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WorldPath BD | AI-Powered Visa Intelligence & Slot Automation</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Bangladesh's leading AI visa assistant. Get 2025 visa roadmaps for Europe, USA, and Canada. 100% accurate VFS/BLS slot automation services.">
+    <meta name="keywords" content="visa assistant bangladesh, vfs slot booking bot, italy visa from bangladesh, germany student visa roadmap, worldpath bd">
+    <meta name="author" content="WorldPath BD">
+    
+    <!-- OpenGraph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://worldpathbd.com/">
+    <meta property="og:title" content="WorldPath BD | Future of Global Visa Intelligence">
+    <meta property="og:description" content="AI-driven visa guidance and high-speed appointment automation for Bangladeshi citizens.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1544027993-37dbfe43562a?q=80&w=1000&auto=format&fit=crop">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "WorldPath BD Visa Intelligence",
+      "description": "AI-powered visa roadmap and slot automation for Bangladeshi citizens.",
+      "provider": {
+        "@type": "Organization",
+        "name": "WorldPath BD",
+        "location": {
+          "@type": "Place",
+          "name": "Dhaka, Bangladesh"
+        }
+      },
+      "areaServed": "Bangladesh",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Visa Services",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "VFS Slot Automation"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "AI Visa Roadmap"
+            }
+          }
+        ]
+      }
+    }
+    </script>
+
     <style>
         :root {
             --primary: #2563eb;
             --secondary: #1e40af;
             --gold: #fbbf24;
-            --gold-muted: #d97706;
-            --gold-glow: rgba(251, 191, 36, 0.15);
             --surface: #020617;
-            --glass: rgba(2, 6, 23, 0.85);
-            --gold-border: rgba(251, 191, 36, 0.2);
+            --glass: rgba(2, 6, 23, 0.8);
+            --gold-border: rgba(251, 191, 36, 0.15);
         }
+        
         body { 
             font-family: 'Space Grotesk', 'Hind Siliguri', sans-serif; 
             background: var(--surface);
             color: #f8fafc;
             overflow-x: hidden;
-        }
-        .bengali { font-family: 'Hind Siliguri', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #020617; }
-        ::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
-
-        .mesh-gradient {
-            background: 
-                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.12) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(251, 191, 36, 0.08) 0px, transparent 40%),
-                radial-gradient(at 100% 100%, rgba(30, 58, 138, 0.15) 0px, transparent 50%),
-                radial-gradient(at 0% 100%, rgba(251, 191, 36, 0.05) 0px, transparent 40%),
-                radial-gradient(at 50% 50%, rgba(2, 6, 23, 1) 0px, transparent 100%),
-                #020617;
-            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
         }
 
         .glass-panel {
             background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--gold-border);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(251, 191, 36, 0.02);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         .gold-gradient {
-            background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 50%, #d97706 100%);
+            background: linear-gradient(135deg, #fff7ed 0%, #fbbf24 50%, #d97706 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .gold-border {
-            border: 1px solid var(--gold-border);
-            box-shadow: 0 0 20px rgba(251, 191, 36, 0.05);
         }
 
         .gold-button {
             background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
             color: #020617;
-            font-weight: 800;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 20px -5px rgba(251, 191, 36, 0.4);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .gold-button:hover {
-            box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
-            transform: translateY(-2px);
+        
+        .gold-button:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 40px -10px rgba(251, 191, 36, 0.6);
             filter: brightness(1.1);
         }
 
-        .blue-glow {
-            box-shadow: 0 0 40px rgba(37, 99, 235, 0.1);
+        .mesh-gradient {
+            background-color: #020617;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(221,83%,53%,0.15) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(35,92%,51%,0.1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(221,83%,53%,0.15) 0, transparent 50%);
+            background-attachment: fixed;
         }
 
-        @keyframes pulse-gold {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.02); }
+        /* Smooth Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: rgba(251, 191, 36, 0.1); 
+            border-radius: 20px; 
+            border: 2px solid transparent;
+            background-clip: content-box;
         }
-        .animate-pulse-gold { animation: pulse-gold 4s ease-in-out infinite; }
-        
-        .floating {
-            animation: float 6s ease-in-out infinite;
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        /* Neural Pulse Animation */
+        @keyframes neural-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(37, 99, 235, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
         }
+        .pulse-blue { animation: neural-pulse 2s infinite; }
+
         @keyframes float {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
+        .animate-float { animation: float 5s ease-in-out infinite; }
 
-        .text-neon-gold {
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-        }
+        .bengali { font-family: 'Hind Siliguri', sans-serif; line-height: 1.6; }
         
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: var(--gold-border);
-            border-radius: 10px;
+        /* Mobile Specific Overrides */
+        @media (max-width: 640px) {
+            h1 { font-size: 2.75rem !important; line-height: 1.1 !important; }
+            .container { padding-left: 1rem; padding-right: 1rem; }
+            .glass-panel { border-radius: 32px !important; padding: 1.5rem !important; }
         }
     </style>
 <script type="importmap">
@@ -116,19 +159,17 @@
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
     "express": "https://esm.sh/express@^5.2.1",
     "mongoose": "https://esm.sh/mongoose@^9.0.2",
     "cors": "https://esm.sh/cors@^2.8.5",
-    "bcryptjs": "https://esm.sh/bcryptjs@^3.0.3",
-    "jsonwebtoken": "https://esm.sh/jsonwebtoken@^9.0.3",
     "dotenv": "https://esm.sh/dotenv@^17.2.3",
     "helmet": "https://esm.sh/helmet@^8.1.0",
     "morgan": "https://esm.sh/morgan@^1.10.1",
     "express-rate-limit": "https://esm.sh/express-rate-limit@^8.2.1",
     "path": "https://esm.sh/path@^0.12.7",
-    "url": "https://esm.sh/url@^0.11.4",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "vite": "https://esm.sh/vite@^7.3.0"
+    "url": "https://esm.sh/url@^0.11.4"
   }
 }
 </script>

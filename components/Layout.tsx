@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useWallet } from '../context/WalletContext';
@@ -9,6 +9,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { lang, setLang, t } = useLanguage();
   const { walletId, balance } = useWallet();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const navItems = [
     { path: '/', label: t('explore'), icon: 'fa-compass' },
@@ -17,21 +18,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col selection:bg-amber-500/30 selection:text-white">
-      <header className="glass-panel sticky top-0 z-50 border-b border-white/5">
-        <div className="container mx-auto px-6 h-24 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-4 group">
-            <div className="relative w-14 h-14">
-                <div className="absolute inset-0 bg-blue-600 rounded-2xl rotate-6 group-hover:rotate-12 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.3)]"></div>
-                <div className="absolute inset-0 bg-slate-950 rounded-2xl border border-amber-500/30 flex items-center justify-center -rotate-3 group-hover:rotate-0 transition-transform">
-                   <div className="relative">
-                      <i className="fa-solid fa-earth-asia text-amber-500 text-xl"></i>
-                   </div>
+    <div className="min-h-screen flex flex-col selection:bg-amber-500/30 selection:text-white relative">
+      <header className="glass-panel sticky top-0 z-[100] border-b border-white/5 backdrop-blur-3xl">
+        <div className="container mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3 md:gap-4 group">
+            <div className="relative w-10 h-10 md:w-12 md:h-12">
+                <div className="absolute inset-0 bg-blue-600 rounded-xl md:rounded-2xl rotate-6 group-hover:rotate-12 transition-transform shadow-[0_0_20px_rgba(59,130,246,0.3)]"></div>
+                <div className="absolute inset-0 bg-slate-950 rounded-xl md:rounded-2xl border border-amber-500/30 flex items-center justify-center -rotate-3 group-hover:rotate-0 transition-transform">
+                   <i className="fa-solid fa-earth-asia text-amber-500 text-base md:text-xl"></i>
                 </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-black tracking-tighter text-white uppercase">WORLDPATH <span className="gold-gradient">BD</span></h1>
-              <span className="text-[9px] text-blue-400 font-black uppercase tracking-[0.2em] mono block">SECURE GLOBAL NODE</span>
+            <div className="hidden sm:block">
+              <h1 className="text-lg md:text-xl font-black tracking-tighter text-white uppercase">WORLDPATH <span className="gold-gradient">BD</span></h1>
+              <span className="text-[8px] text-blue-400 font-black uppercase tracking-[0.2em] mono block opacity-70">NEURAL ACCESS</span>
             </div>
           </Link>
           
@@ -40,7 +39,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <Link 
                 key={item.path} 
                 to={item.path} 
-                className={`flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 border ${
+                className={`flex items-center gap-3 px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300 border ${
                   location.pathname === item.path 
                     ? 'bg-amber-500/10 text-white border-amber-500/40' 
                     : 'text-slate-500 border-transparent hover:text-white hover:bg-white/5'
@@ -52,28 +51,60 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             ))}
           </nav>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 md:gap-6">
             <Link 
               to="/add-fund"
-              className="flex items-center gap-4 bg-white/[0.03] border border-white/10 p-2 pl-4 rounded-2xl hover:border-amber-500/50 transition-all group"
+              className="flex items-center gap-3 md:gap-4 bg-white/[0.03] border border-white/10 p-1.5 md:p-2 pl-3 md:pl-4 rounded-xl md:rounded-2xl hover:border-amber-500/50 transition-all group"
             >
               <div className="text-right">
-                <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Wallet ID: {walletId}</div>
+                <div className="text-[7px] md:text-[8px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Wallet: {walletId?.slice(-6)}</div>
                 <div className="text-xs font-black text-white uppercase tracking-tighter">
-                  {balance.toLocaleString()} <span className="text-amber-500">BDT</span>
+                  {balance.toLocaleString()} <span className="text-amber-500 text-[10px]">BDT</span>
                 </div>
               </div>
-              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-black shadow-lg group-hover:bg-white transition-all">
-                <i className="fa-solid fa-plus text-xs"></i>
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-amber-500 rounded-lg md:rounded-xl flex items-center justify-center text-black shadow-lg group-hover:bg-white transition-all">
+                <i className="fa-solid fa-plus text-[10px]"></i>
               </div>
             </Link>
 
-            <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 h-10">
-              <button onClick={() => setLang('en')} className={`px-3 rounded-lg text-[9px] font-black ${lang === 'en' ? 'bg-white/10 text-white' : 'text-slate-600'}`}>EN</button>
-              <button onClick={() => setLang('bn')} className={`px-3 rounded-lg text-[9px] font-black bengali ${lang === 'bn' ? 'bg-white/10 text-white' : 'text-slate-600'}`}>বাং</button>
+            {/* Language Switcher Mobile Compact */}
+            <div className="hidden sm:flex bg-white/5 p-1 rounded-xl border border-white/10 h-10">
+              <button onClick={() => setLang('en')} className={`px-2 md:px-3 rounded-lg text-[9px] font-black ${lang === 'en' ? 'bg-white/10 text-white' : 'text-slate-600'}`}>EN</button>
+              <button onClick={() => setLang('bn')} className={`px-2 md:px-3 rounded-lg text-[9px] font-black bengali ${lang === 'bn' ? 'bg-white/10 text-white' : 'text-slate-600'}`}>বাং</button>
             </div>
+
+            {/* Mobile Menu Toggle */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white text-lg"
+            >
+              <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars-staggered'}`}></i>
+            </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-slate-950 border-t border-white/5 animate-in slide-in-from-top duration-300">
+            <div className="p-6 space-y-4">
+              {navItems.map(item => (
+                <Link 
+                  key={item.path} 
+                  to={item.path} 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 text-[10px] font-black uppercase text-slate-300 tracking-widest"
+                >
+                  <i className={`fa-solid ${item.icon} text-amber-500`}></i>
+                  {item.label}
+                </Link>
+              ))}
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <button onClick={() => {setLang('en'); setMobileMenuOpen(false);}} className={`py-3 rounded-xl font-black text-[10px] uppercase border ${lang === 'en' ? 'bg-white text-black border-white' : 'border-white/10 text-slate-500'}`}>English</button>
+                <button onClick={() => {setLang('bn'); setMobileMenuOpen(false);}} className={`py-3 rounded-xl font-black text-[10px] uppercase bengali border ${lang === 'bn' ? 'bg-white text-black border-white' : 'border-white/10 text-slate-500'}`}>বাংলা</button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="flex-grow relative">
@@ -81,13 +112,40 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <MessengerChat />
       </main>
 
-      <footer className="py-20 bg-slate-950 border-t border-white/5">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
-          <div>
-            <h2 className="text-2xl font-black text-white tracking-tighter uppercase mb-2">WORLDPATH <span className="gold-gradient">BD</span></h2>
-            <p className="text-[10px] text-slate-600 font-black uppercase tracking-[0.4em]">Decentralized Visa Intelligence • 2025</p>
+      <footer className="py-16 md:py-24 bg-slate-950 border-t border-white/5">
+        <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="lg:col-span-2">
+            <h2 className="text-2xl md:text-3xl font-black text-white tracking-tighter uppercase mb-6">WORLDPATH <span className="gold-gradient">BD</span></h2>
+            <p className="text-slate-500 text-sm max-w-sm font-medium mb-10 leading-relaxed">
+              Leading the digital frontier of visa intelligence and high-accuracy appointment automation for Bangladeshi citizens worldwide.
+            </p>
+            <div className="flex gap-4">
+              {['facebook', 'twitter', 'linkedin', 'whatsapp'].map(social => (
+                <a key={social} href="#" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-white hover:border-blue-500 transition-all">
+                  <i className={`fa-brands fa-${social}`}></i>
+                </a>
+              ))}
+            </div>
           </div>
-          <Link to="/author" className="text-[10px] font-black text-slate-700 hover:text-amber-500 transition-colors uppercase tracking-widest border border-white/5 px-6 py-3 rounded-xl">Authority Panel</Link>
+          <div>
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Navigation</h4>
+            <ul className="space-y-4">
+              {navItems.map(item => (
+                <li key={item.path}><Link to={item.path} className="text-sm font-bold text-slate-500 hover:text-white transition-colors">{item.label}</Link></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8">Legal</h4>
+            <ul className="space-y-4">
+              <li><Link to="/author" className="text-sm font-bold text-slate-500 hover:text-white transition-colors">Authority Access</Link></li>
+              <li><a href="#" className="text-sm font-bold text-slate-500 hover:text-white transition-colors">Terms of Protocol</a></li>
+              <li><a href="#" className="text-sm font-bold text-slate-500 hover:text-white transition-colors">Privacy Neural Link</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="container mx-auto px-6 mt-20 pt-10 border-t border-white/5 text-center">
+          <p className="text-[9px] text-slate-700 font-black uppercase tracking-[0.5em]">© 2025 WorldPath BD Architecture. All Rights Reserved.</p>
         </div>
       </footer>
     </div>
